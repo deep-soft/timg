@@ -142,6 +142,8 @@ jobs:
       - name: Print RELEASE_TAG
         run: |
           echo "RELEASE_TAG=${{ needs.TagIfNeeded.RELEASE_TAG }}"
+          read TAG_HASH TAG_VERSION <<<$(git annotate -l CMakeLists.txt | sed 's/\(^[0-9A-Fa-f]\+\).*project(timg VERSION \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1 \2/p;d')
+          echo "RELEASE_TAG=v${TAG_VERSION}" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: deep-soft/checkout@v4
@@ -198,6 +200,14 @@ jobs:
           name: timg-${{ env.PACKAGE_VERSION }}-x86_64.AppImage
           path: timg-${{ env.PACKAGE_VERSION }}-x86_64.AppImage
 
+      - name: Publish 
+        continue-on-error: true
+        uses: deep-soft/action-gh-release@v2.1
+        with:
+          tag_name: ${{ env.PACKAGE_VERSION }}
+          files: |
+            timg-${{ env.PACKAGE_VERSION }}-x86_64.AppImage
+
   AppImageBuildFull:
     needs: [ TagIfNeeded ]
     runs-on: ubuntu-latest
@@ -206,6 +216,8 @@ jobs:
       - name: Print RELEASE_TAG
         run: |
           echo "RELEASE_TAG=${{ needs.TagIfNeeded.RELEASE_TAG }}"
+          read TAG_HASH TAG_VERSION <<<$(git annotate -l CMakeLists.txt | sed 's/\(^[0-9A-Fa-f]\+\).*project(timg VERSION \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1 \2/p;d')
+          echo "RELEASE_TAG=v${TAG_VERSION}" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: deep-soft/checkout@v4
@@ -275,6 +287,14 @@ jobs:
         with:
           name: timg-${{ env.PACKAGE_VERSION }}-x86_64-Full.AppImage
           path: timg-${{ env.PACKAGE_VERSION }}-x86_64-Full.AppImage
+
+      - name: Publish 
+        continue-on-error: true
+        uses: deep-soft/action-gh-release@v2.1
+        with:
+          tag_name: ${{ env.PACKAGE_VERSION }}
+          files: |
+            timg-${{ env.PACKAGE_VERSION }}-x86_64-Full.AppImage
 
   Release:
     needs: [ AppImageBuild, AppImageBuildFull ]
